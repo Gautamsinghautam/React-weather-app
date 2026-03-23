@@ -1,41 +1,50 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { AsyncPaginate } from "react-select-async-paginate";
-import { geo_api_url, geo_api_options } from "../../api";
+import { countries_capital_api_url, countries_capital_api_options } from "../../api";
 
 const Search = ({ onSearchChange }) => {
 
     const [search, setSearch] = useState(null);
+    const [countriesData, setCountriesData] = useState([]);
 
-    const loadOptions = (inputValue) => {
-        // Filter countries by input value from the response
-        return fetch(geo_api_url, geo_api_options)
+    // Fetch all countries and capitals once on component mount
+    useEffect(() => {
+        fetch(countries_capital_api_url, countries_capital_api_options)
             .then(response => response.json())
             .then(response => {
-                console.log("API Response:", response);
-                // Filter countries based on user input
-                const filtered = response.data.filter(country =>
-                    country.name.toLowerCase().includes(inputValue.toLowerCase())
-                );
+                console.log("All Countries and Capitals:", response);
+                if (response.data) {
+                    setCountriesData(response.data);
+                }
+            })
+            .catch(error => console.error("Error fetching countries and capitals:", error));
+    }, []);
+
+    const loadOptions = (inputValue) => {
+        // Filter countries locally by input value
+        const filtered = countriesData.filter(country =>
+            country.name.toLowerCase().includes(inputValue.toLowerCase())
+        );
+        return Promise.resolve({
+            options: filtered.map((countryInfo) => {
                 return {
-                    options: filtered.map((countryInfo) => {
-                        return {
-                            value: countryInfo.name,
-                            label: `${countryInfo.name} ${countryInfo.unicodeFlag || ''}`,
-                        };
-                    })
+                    value: countryInfo.name,
+                    label: `${countryInfo.name}`,
+                    capital: countryInfo.capital
                 };
             })
-            .catch(error => console.error("Error fetching country info:", error));
+        });
     }
 
     const handleOnChange = (searchData) => {
         setSearch(searchData);
+        console.log("Selected Country and Capital:", searchData);
         onSearchChange(searchData);
     };
 
     return (
         <AsyncPaginate
-            placeholder="Search for city"
+            placeholder="Search for country"
             debounceTimeout={600}
             value={search}
             onChange={handleOnChange}
