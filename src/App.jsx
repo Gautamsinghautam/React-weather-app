@@ -4,6 +4,7 @@ import { Theme } from "@radix-ui/themes";
 import Search from './components/search/search';
 import CurrentWeather from './components/current-weather/current-weather';
 import { weather_api_key, weather_api_url, geo_api_url } from './api';
+import Forecast from './components/forecast/forecast';
 
 
 function App() {
@@ -39,13 +40,14 @@ function App() {
       .catch((err) => console.log(err));
   }
   console.log("Current Weather:", currentWeather);
-  console.log("Forecast:", forecast);
+  // console.log("Forecast:", forecast);
 
   return (
     <>
     <div className='container'>
       <Search onSearchChange={handleOnSearchChange} />
-      <CurrentWeather data={currentWeather} />
+      {currentWeather && <CurrentWeather data={currentWeather} />}
+      {forecast && <Forecast data={forecast} />}
     </div>
     </>
   )
